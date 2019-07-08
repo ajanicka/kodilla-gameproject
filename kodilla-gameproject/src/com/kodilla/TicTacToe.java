@@ -15,6 +15,9 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -39,10 +42,13 @@ public class TicTacToe extends Application {
         Background background = new Background(backgroundImage);
         Menu menu = new Menu("Menu");
         MenuItem menuItem1 = new MenuItem("New Game");
-        MenuItem menuItem2 = new MenuItem("Item 2");
+        MenuItem menuItem2 = new MenuItem("Save Game");
+        MenuItem menuItem3 = new MenuItem("Load Game");
+
 
         menu.getItems().add(menuItem1);
         menu.getItems().add(menuItem2);
+        menu.getItems().add(menuItem3);
 
         MenuBar menuBar = new MenuBar();
         VBox vBox = new VBox(menuBar);
@@ -51,6 +57,9 @@ public class TicTacToe extends Application {
         menuBar.getMenus().add(menu);
 
         menuItem1.setOnAction(event -> newGame());
+        menuItem2.setOnAction(event -> saveGame());
+        menuItem3.setOnAction(event -> loadGame());
+
 
         Scene scene = new Scene(root, 800, 800, Color.BLACK);
         root.setBackground(background);
@@ -98,10 +107,37 @@ public class TicTacToe extends Application {
         root.getChildren().add(topPropertiesBox);
 
 
-
         primaryStage.setTitle("Tic Tac Toe");
         primaryStage.setScene(scene);
         primaryStage.show();
+    }
+
+    private void loadGame() {
+        //read tile list
+        //read done moves
+    }
+
+    private void saveGame() {
+        File file = new File("TicTacToeSavedGame.txt");
+
+        FileWriter writer = null;
+        try {
+            writer = new FileWriter(file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            writer.write(tilesList.toString());
+            writer.write(doneMovesIterator);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void newGame() {

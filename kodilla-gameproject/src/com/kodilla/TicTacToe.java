@@ -15,9 +15,7 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -33,6 +31,7 @@ public class TicTacToe extends Application {
     Label whoStartsInfo = new Label();
     int doneMovesIterator = 0;
     Button whoStartsBtn = new Button();
+    boolean weHaveWinner = false;
 
 
     @Override
@@ -52,7 +51,7 @@ public class TicTacToe extends Application {
 
         MenuBar menuBar = new MenuBar();
         VBox vBox = new VBox(menuBar);
-    Pane root = new Pane(vBox);
+        Pane root = new Pane(vBox);
 
         menuBar.getMenus().add(menu);
 
@@ -113,30 +112,92 @@ public class TicTacToe extends Application {
     }
 
     private void loadGame() {
-        //read tile list
-        //read done moves
+        FileReader fr = null;
+
+        ArrayList<Character> savedGame = new ArrayList<>();
+
+        newGame();
+
+        try {
+            fr = new FileReader("TicTacToeSavedGame.txt");
+
+        } catch (FileNotFoundException e) {
+            System.out.println("Loading File Warning: There is no file TicTacToeSavedGame.txt");
+            whoStartsInfo.setText("There is no saved game");
+        }
+
+        int i;
+        if (fr != null) {
+            while (true) {
+                try {
+                    if (!((i = fr.read()) != -1)) {
+                        break;
+                    }
+
+                    System.out.print((char) i);
+                    savedGame.add((char) i);
+                } catch (IOException e) {
+                    System.out.println("Loading File Warning");
+                }
+            }
+        }
+
+        if (!savedGame.isEmpty()) {
+
+            playable = true;
+            for (int j = 0; j < 9; j++) {
+                if (!(savedGame.get(j).toString().equals(" "))) {
+                    tilesList.get(j).text.setText(savedGame.get(j).toString());
+                }
+            }
+
+            doneMovesIterator = savedGame.get(9);
+            playerTurn = true;
+            whoStartsBtn.setDisable(true);
+            whoStartsInfo.setText("Game loaded");
+        }
+        else {
+            if (whoStartsInfo.getText().equals("")) {
+                whoStartsInfo.setText("Problem with loading saved game");
+            }
+        }
+
     }
 
     private void saveGame() {
-        File file = new File("TicTacToeSavedGame.txt");
+        if (!weHaveWinner && doneMovesIterator != 9 && doneMovesIterator > 0) {
+            File file = new File("TicTacToeSavedGame.txt");
 
-        FileWriter writer = null;
-        try {
-            writer = new FileWriter(file);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
-            writer.write(tilesList.toString());
-            writer.write(doneMovesIterator);
+            FileWriter writer = null;
+            try {
+                writer = new FileWriter(file);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+            String tileText = "";
+            try {
+                for (int i = 0; i < 9; i++) {
+                    tileText = tilesList.get(i).text.getText();
+                    if (tileText.equals("")) {
+                        writer.write(" ");
+                    } else {
+                        writer.write(tileText);
+                    }
+                    whoStartsInfo.setText("Game saved");
+                }
+                writer.write("" + doneMovesIterator);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            winnerLabel.setText("");
+            whoStartsInfo.setText("Saving is not possible now..");
         }
     }
 
@@ -147,9 +208,10 @@ public class TicTacToe extends Application {
         doneMovesIterator = 0;
         whoStartsBtn.setDisable(false);
         winnerLabel.setText("");
+        whoStartsInfo.setText("");
     }
 
-    private void clearBoard(){
+    private void clearBoard() {
         for (Tile tile : tilesList)
             tile.text.setText("");
     }
@@ -165,7 +227,6 @@ public class TicTacToe extends Application {
     }
 
     private void checkGameStatus() {
-        boolean weHaveWinner = false;
         String winner = "";
         int index = 0;
 
@@ -221,9 +282,9 @@ public class TicTacToe extends Application {
             whoStartsInfo.setText("");
 
             playable = false;
-            if(winner.equals("X")) {
+            if (winner.equals("X")) {
                 winnerLabel.setText("CONGRATULATIONS!!");
-            } else if(winner.equals("O")) {
+            } else if (winner.equals("O")) {
                 winnerLabel.setText("Not this time :(");
             }
         } else if (doneMovesIterator == 9) {
